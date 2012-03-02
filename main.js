@@ -6,12 +6,12 @@ var VERTEX_SHADER =
 	"uniform mat4 uProjMatrix;\n"+
 	"attribute vec3 vPosition;\n"+
 	"void main() {\n"+
-	"	gl_Position = (vec4(vPosition, 1.0) * uModelViewMatrix) * uProjMatrix;\n"+
+	"	gl_Position = uProjMatrix * (uModelViewMatrix * vec4(vPosition, 1.0));\n"+
 	"}\n";
 var FRAGMENT_SHADER = 
 	"precision mediump float;\n"+
 	"void main() {\n"+
-	"	gl_FragColor = vec4(gl_FragCoord.x, gl_FragCoord.y, gl_FragCoord.z, 1.0);\n"+
+	"	gl_FragColor = vec4(mod(gl_FragCoord.x, 1.0), mod(gl_FragCoord.y, 1.0), mod(gl_FragCoord.z, 1.0), 1.0);\n"+
 	"}\n";
 
 var canvas, gl;
@@ -28,13 +28,14 @@ window.onload = function () {
 		return;
 	}
 	
-	setup3D();
-	draw3D();
+	if(setup3D()) {
+		draw3D();
+	}
 }
 
 function error(msg) {
 	console.log(msg);
-	return null;
+	return false;
 }
 
 function debug3D(module, glErr) {
@@ -73,12 +74,12 @@ function setup3D() {
 		modelViewMatrixUniform = gl.getUniformLocation(program, "uModelViewMatrix");
 		projMatrixUniform = gl.getUniformLocation(program, "uProjMatrix");
 		
-		projMatrix = Mat4MakeOrthographic(0, WIDTH, HEIGHT, 0, 1000, -1000);
+		projMatrix = Mat4MakeOrthographic(0, WIDTH, HEIGHT, 0, -1000, 1000);
 		
 		gl.uniformMatrix4fv(projMatrixUniform, false, projMatrix);
 		debug3D("uniformMatrix4fv pr", gl.getError());
 		
-		heightmap = new Heightmap(5, 5);
+		heightmap = new Heightmap(2, 2);
 		// heightmap.randomize(0, 3);
 		heightmap.initializeGL(gl);
 		
@@ -90,6 +91,8 @@ function setup3D() {
 	} catch(x) {
 		return error(x);
 	}
+	
+	return true;
 }
 
 function draw3D() {
@@ -111,20 +114,26 @@ function draw3D() {
 	camOffsetX /= WIDTH;
 	camOffsetX -= 0.5;
 	camOffsetX *= 2.0 * Math.PI;
+	camOffsetX %= (2.0 * Math.PI);
 	
 	camOffsetY = mouseY;
 	camOffsetY -= canvas.offsetTop;
 	camOffsetY /= HEIGHT;
 	camOffsetY -= 0.5;
 	camOffsetY *= 2.0 * Math.PI;
+	camOffsetY %= (2.0 * Math.PI);
 	
 	// Construct the modelview matrix
 	mvMatrix = Mat4MakeIdentity();
+	
+	//Mat4Rotate(mvMatrix, Math.PI / 4.0, 1, 0, 0);
+	Mat4Translate(mvMatrix, WIDTH/2, HEIGHT/2, 0);
 	Mat4Scale(mvMatrix, 20, 20, 20);
-	Mat4Translate(mvMatrix, heightmap.x/2, 0, heightmap.y/2);
-	// Mat4Translate(mvMatrix, WIDTH/2, HEIGHT/2, 0);
-	Mat4Rotate(mvMatrix, camOffsetX, 0, 1, 0);
 	Mat4Rotate(mvMatrix, camOffsetY, 1, 0, 0);
+	Mat4Rotate(mvMatrix, camOffsetX, 0, 1, 0);
+	Mat4Translate(mvMatrix, -(heightmap.x-1.0)/2.0, 0, -(heightmap.y-1.0)/2.0);
+	
+	
 	
 	
 	

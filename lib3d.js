@@ -86,15 +86,11 @@ function Mat4MakeOrthographic(left, right, bottom, top, near, far) {
 }
 
 function Mat4Translate(mat4, x, y, z) {
-	mat4[Mat4Idx(0,3)] += x;
-	mat4[Mat4Idx(1,3)] += y;
-	mat4[Mat4Idx(2,3)] += z;
+	Mat4Multiply(mat4, mat4, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]);
 }
 
 function Mat4Scale(mat4, x, y, z) {
-	mat4[Mat4Idx(0,0)] *= x;
-	mat4[Mat4Idx(1,1)] *= y;
-	mat4[Mat4Idx(2,2)] *= z;
+	Mat4Multiply(mat4, mat4, [x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1]);
 }
 
 function Mat4Idx(row,col) {
