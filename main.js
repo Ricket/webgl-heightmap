@@ -49,6 +49,7 @@ function setup3D() {
 	try {
 		gl.viewport(0, 0, WIDTH, HEIGHT);
 		gl.clearColor(0.0, 0.0, 0.0, 0.0);
+		// gl.enable(gl.CULL_FACE);
 
 		vertexShader = createShader(gl, gl.VERTEX_SHADER, VERTEX_SHADER);
 		if(!vertexShader) return error("Error creating vertex shader");
@@ -79,8 +80,8 @@ function setup3D() {
 		gl.uniformMatrix4fv(projMatrixUniform, false, projMatrix);
 		debug3D("uniformMatrix4fv pr", gl.getError());
 		
-		heightmap = new Heightmap(2, 2);
-		// heightmap.randomize(0, 3);
+		heightmap = new Heightmap(20, 20);
+		heightmap.randomize(0, 3);
 		heightmap.initializeGL(gl);
 		
 		glError = gl.getError();
