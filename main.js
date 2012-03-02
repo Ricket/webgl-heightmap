@@ -49,7 +49,9 @@ function setup3D() {
 	try {
 		gl.viewport(0, 0, WIDTH, HEIGHT);
 		gl.clearColor(0.0, 0.0, 0.0, 0.0);
-		// gl.enable(gl.CULL_FACE);
+		
+		gl.enable(gl.CULL_FACE);
+		gl.frontFace(gl.CCW);
 
 		vertexShader = createShader(gl, gl.VERTEX_SHADER, VERTEX_SHADER);
 		if(!vertexShader) return error("Error creating vertex shader");

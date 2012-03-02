@@ -50,10 +50,8 @@ Heightmap.prototype.randomize = function (min, max) {
 	
 	for(i = 0; i < this.x * this.y; i++) {
 		this.heights[i] = min + (max - min) * Math.random();
-		//this.verts[i*3-1] = this.heights[i];
+		this.verts[i*3+1] = this.heights[i];
 	}
-	this.regenerateVerts();
-	// TODO fix the above heights calculation and then remove regenerateVerts
 }
 
 Heightmap.prototype.initializeGL = function (gl) {
