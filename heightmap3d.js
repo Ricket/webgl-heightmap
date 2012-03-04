@@ -27,7 +27,6 @@ function Heightmap(x, y, heights) {
 			this.indices.push(i * this.x + j);
 			this.indices.push((i - 1) * this.x + j);
 			this.indices.push((i - 1) * this.x + j + 1);
-			
 		}
 	}
 	
@@ -45,6 +44,17 @@ Heightmap.prototype.regenerateVerts = function () {
 			this.verts.push(i);
 		}
 	}
+	
+	this.colors = [];
+	for(i = 0; i < this.y; i++) {
+		for(j = 0; j < this.x; j++) {
+			this.colors.push(Math.random());
+			this.colors.push(Math.random());
+			this.colors.push(Math.random());
+			this.colors.push(1.0);
+		}
+	}
+	
 }
 
 Heightmap.prototype.randomize = function (min, max) {
@@ -61,12 +71,16 @@ Heightmap.prototype.initializeGL = function (gl) {
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.vertsBuf);
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.verts), gl.STATIC_DRAW);
 	
+	this.colorsBuf = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.colorsBuf);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.colors), gl.STATIC_DRAW);
+	
 	this.indicesBuf = gl.createBuffer();
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuf);
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), gl.STATIC_DRAW);
 }
 
-Heightmap.prototype.drawGL = function (gl, vertexPositionAttribute) {
+Heightmap.prototype.drawGL = function (gl, vertexPositionAttribute, vertexColorAttribute) {
 	if(!this.vertsBuf || !this.indicesBuf) {
 		console.log("[ERROR] drawGL: not initialized");
 		return;
@@ -74,6 +88,9 @@ Heightmap.prototype.drawGL = function (gl, vertexPositionAttribute) {
 	
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.vertsBuf);
 	gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+	
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.colorsBuf);
+	gl.vertexAttribPointer(vertexColorAttribute, 4, gl.FLOAT, false, 0, 0);
 	
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuf);
 	gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);

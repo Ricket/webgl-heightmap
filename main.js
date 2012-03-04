@@ -4,19 +4,23 @@ var HEIGHT = 500;
 var VERTEX_SHADER = 
 	"uniform mat4 uModelViewMatrix;\n"+
 	"uniform mat4 uProjMatrix;\n"+
-	"attribute vec3 vPosition;\n"+
+	"attribute vec3 a_Position;\n"+
+	"attribute vec4 a_Color;\n"+
+	"varying vec4 v_Color;\n"+
 	"void main() {\n"+
-	"	gl_Position = uProjMatrix * (uModelViewMatrix * vec4(vPosition, 1.0));\n"+
+	"	v_Color = a_Color;\n"+
+	"	gl_Position = uProjMatrix * (uModelViewMatrix * vec4(a_Position, 1.0));\n"+
 	"}\n";
 var FRAGMENT_SHADER = 
 	"precision mediump float;\n"+
+	"varying vec4 v_Color;\n"+
 	"void main() {\n"+
-	"	gl_FragColor = vec4(mod(gl_FragCoord.x, 1.0), mod(gl_FragCoord.y, 1.0), mod(gl_FragCoord.z, 1.0), 1.0);\n"+
+	"	gl_FragColor = v_Color;\n"+
 	"}\n";
 
 var canvas, gl;
 var vertexShader, fragmentShader, program;
-var vertexPositionAttribute, modelViewMatrixUniform, projMatrixUniform;
+var vertexPositionAttribute, vertexColorAttribute, modelViewMatrixUniform, projMatrixUniform;
 var projMatrix;
 var heightmap = null;
 
@@ -52,6 +56,8 @@ function setup3D() {
 		
 		gl.enable(gl.CULL_FACE);
 		gl.frontFace(gl.CCW);
+		
+		gl.enable(gl.DEPTH_TEST);
 
 		vertexShader = createShader(gl, gl.VERTEX_SHADER, VERTEX_SHADER);
 		if(!vertexShader) return error("Error creating vertex shader");
@@ -72,12 +78,16 @@ function setup3D() {
 		
 		gl.useProgram(program);
 		
-		vertexPositionAttribute = gl.getAttribLocation(program, "vPosition");
+		vertexPositionAttribute = gl.getAttribLocation(program, "a_Position");
 		gl.enableVertexAttribArray(vertexPositionAttribute);
+		
+		vertexColorAttribute = gl.getAttribLocation(program, "a_Color");
+		gl.enableVertexAttribArray(vertexColorAttribute);
+		
 		modelViewMatrixUniform = gl.getUniformLocation(program, "uModelViewMatrix");
 		projMatrixUniform = gl.getUniformLocation(program, "uProjMatrix");
 		
-		projMatrix = Mat4MakeOrthographic(0, WIDTH, HEIGHT, 0, -1000, 1000);
+		projMatrix = Mat4MakeOrthographic(0, WIDTH, 0, HEIGHT, -1000, 1000);
 		
 		gl.uniformMatrix4fv(projMatrixUniform, false, projMatrix);
 		debug3D("uniformMatrix4fv pr", gl.getError());
@@ -133,6 +143,10 @@ function draw3D() {
 	camOffsetY -= 0.5;
 	camOffsetY *= 2.0 * Math.PI;
 	camOffsetY %= (2.0 * Math.PI);
+	camOffsetY = Math.min(camOffsetY, 0.0);
+	camOffsetY = Math.max(camOffsetY, Math.PI/-2.0);
+	
+	console.log("" + camOffsetX + ", " + camOffsetY);
 	
 	// Construct the modelview matrix
 	mvMatrix = Mat4MakeIdentity();
@@ -151,7 +165,7 @@ function draw3D() {
 		gl.uniformMatrix4fv(modelViewMatrixUniform, false, mvMatrix);
 
 		// Draw the heightmap
-		heightmap.drawGL(gl, vertexPositionAttribute);
+		heightmap.drawGL(gl, vertexPositionAttribute, vertexColorAttribute);
 	}
 	
 	

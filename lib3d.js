@@ -43,6 +43,11 @@ function createShader(gl, type, src) {
 	gl.shaderSource(shader, src);
 
 	gl.compileShader(shader);
+	
+	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+		console.log("An error occurred compiling the shader " + type + ": " + gl.getShaderInfoLog(shader));
+		return null;
+	}
 
 	// TODO check if it successfully compiled
 
@@ -80,7 +85,7 @@ function Mat4MakeOrthographic(left, right, bottom, top, near, far) {
 	return [
 		2.0 / (right-left), 0, 0, 0,
 		0, 2.0 / (top-bottom), 0, 0,
-		0, 0, -2.0 / (far-near), 0,
+		0, 0, 2.0 / (far-near), 0,
 		-(right+left)/(right-left), -(top+bottom)/(top-bottom), -(far+near)/(far-near), 1
 	];
 }
