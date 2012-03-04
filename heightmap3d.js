@@ -21,11 +21,13 @@ function Heightmap(x, y, heights) {
 	for(i = 1; i < this.y; i++) {
 		for(j = 0; j < this.x - 1; j++) {
 			this.indices.push(i * this.x + j);
+			this.indices.push((i - 1) * this.x + j + 1);
 			this.indices.push(i * this.x + j + 1);
-			this.indices.push((i - 1) * this.x + j + 1);
+			
 			this.indices.push(i * this.x + j);
-			this.indices.push((i - 1) * this.x + j + 1);
 			this.indices.push((i - 1) * this.x + j);
+			this.indices.push((i - 1) * this.x + j + 1);
+			
 		}
 	}
 	
@@ -75,4 +77,20 @@ Heightmap.prototype.drawGL = function (gl, vertexPositionAttribute) {
 	
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuf);
 	gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);
+}
+
+Heightmap.loadFromFile = function (url, success, error) {
+	$.ajax({
+		url: url,
+		success: function (data) {
+			var newHeightmap = new Heightmap(data.x, data.y, data.heights);
+			success.call(newHeightmap);
+		},
+		error: function (xhr, status, errormsg) {
+			error.call(null, status, errormsg)
+		},
+		dataType: 'jsonp',
+		jsonp: false,
+		jsonpCallback: 'onJSONPLoad'
+	});
 }

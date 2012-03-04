@@ -18,10 +18,10 @@ var canvas, gl;
 var vertexShader, fragmentShader, program;
 var vertexPositionAttribute, modelViewMatrixUniform, projMatrixUniform;
 var projMatrix;
-var heightmap;
+var heightmap = null;
 
-window.onload = function () {
-	canvas = document.getElementById("canvas");
+$(document).ready(function () {
+	canvas = $("#canvas")[0];
 	gl = get3DContext(canvas);
 	if(gl == null) {
 		alert("Your browser doesn't appear to support 3D. Try updating it or using a recent version of Chrome or Firefox.");
@@ -31,7 +31,7 @@ window.onload = function () {
 	if(setup3D()) {
 		draw3D();
 	}
-}
+});
 
 function error(msg) {
 	console.log(msg);
@@ -82,9 +82,17 @@ function setup3D() {
 		gl.uniformMatrix4fv(projMatrixUniform, false, projMatrix);
 		debug3D("uniformMatrix4fv pr", gl.getError());
 		
-		heightmap = new Heightmap(20, 20);
-		heightmap.randomize(0, 3);
-		heightmap.initializeGL(gl);
+		Heightmap.loadFromFile('heightmap.json',
+		function() { /* success */
+			heightmap = this;
+			heightmap.initializeGL(gl);
+		},
+		function (status, errormsg) { /* error */
+			alert('Error loading heightmap: ' + errormsg + ' (randomizing instead)');
+			heightmap = new Heightmap(20, 20);
+			heightmap.randomize(0, 3);
+			heightmap.initializeGL(gl);
+		});
 		
 		glError = gl.getError();
 		if(glError != 0) {
@@ -131,20 +139,21 @@ function draw3D() {
 	
 	//Mat4Rotate(mvMatrix, Math.PI / 4.0, 1, 0, 0);
 	Mat4Translate(mvMatrix, WIDTH/2, HEIGHT/2, 0);
-	Mat4Scale(mvMatrix, 20, 20, 20);
-	Mat4Rotate(mvMatrix, camOffsetY, 1, 0, 0);
-	Mat4Rotate(mvMatrix, camOffsetX, 0, 1, 0);
-	Mat4Translate(mvMatrix, -(heightmap.x-1.0)/2.0, 0, -(heightmap.y-1.0)/2.0);
 	
+	if(heightmap) {
+		Mat4Scale(mvMatrix, 20, 20, 20);
+		Mat4Rotate(mvMatrix, camOffsetY, 1, 0, 0);
+		Mat4Rotate(mvMatrix, camOffsetX, 0, 1, 0);
+		Mat4Translate(mvMatrix, -(heightmap.x-1.0)/2.0, 0, -(heightmap.y-1.0)/2.0);
+
+
+		// Set the modelview matrix to the shader
+		gl.uniformMatrix4fv(modelViewMatrixUniform, false, mvMatrix);
+
+		// Draw the heightmap
+		heightmap.drawGL(gl, vertexPositionAttribute);
+	}
 	
-	
-	
-	
-	// Set the modelview matrix to the shader
-	gl.uniformMatrix4fv(modelViewMatrixUniform, false, mvMatrix);
-	
-	// Draw the heightmap
-	heightmap.drawGL(gl, vertexPositionAttribute);
 	
 	gl.finish();
 }
