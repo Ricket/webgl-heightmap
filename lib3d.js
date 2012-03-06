@@ -90,6 +90,18 @@ function Mat4MakeOrthographic(left, right, bottom, top, near, far) {
 	];
 }
 
+function Mat4MakePerspective(fovy_deg, aspect, near, far) {
+	var f = 1.0 / Math.tan(fovy_deg * Math.PI / 360.0);
+	var neg_depth = near - far;
+	
+	return [
+	f / aspect, 0, 0, 0,
+	0, f, 0, 0,
+	0, 0, (far+near)/neg_depth, -1.0,
+	0, 0, 2.0*(near*far)/neg_depth, 0
+	];
+}
+
 function Mat4Translate(mat4, x, y, z) {
 	Mat4Multiply(mat4, mat4, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]);
 }

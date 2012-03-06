@@ -21,12 +21,12 @@ function Heightmap(x, y, heights) {
 	for(i = 1; i < this.y; i++) {
 		for(j = 0; j < this.x - 1; j++) {
 			this.indices.push(i * this.x + j);
-			this.indices.push((i - 1) * this.x + j + 1);
 			this.indices.push(i * this.x + j + 1);
+			this.indices.push((i - 1) * this.x + j + 1);
 			
 			this.indices.push(i * this.x + j);
-			this.indices.push((i - 1) * this.x + j);
 			this.indices.push((i - 1) * this.x + j + 1);
+			this.indices.push((i - 1) * this.x + j);
 		}
 	}
 	

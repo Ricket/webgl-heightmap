@@ -87,7 +87,9 @@ function setup3D() {
 		modelViewMatrixUniform = gl.getUniformLocation(program, "uModelViewMatrix");
 		projMatrixUniform = gl.getUniformLocation(program, "uProjMatrix");
 		
-		projMatrix = Mat4MakeOrthographic(0, WIDTH, 0, HEIGHT, -1000, 1000);
+		//projMatrix = Mat4MakeOrthographic(0, WIDTH, 0, HEIGHT, 0.001, 1000);
+		projMatrix = Mat4MakePerspective(60.0, WIDTH/HEIGHT, 0.01, 1000);
+		console.log(projMatrix);
 		
 		gl.uniformMatrix4fv(projMatrixUniform, false, projMatrix);
 		debug3D("uniformMatrix4fv pr", gl.getError());
@@ -143,21 +145,20 @@ function draw3D() {
 	camOffsetY -= 0.5;
 	camOffsetY *= 2.0 * Math.PI;
 	camOffsetY %= (2.0 * Math.PI);
-	camOffsetY = Math.min(camOffsetY, 0.0);
+	camOffsetY = Math.min(camOffsetY, Math.PI/2.0);
 	camOffsetY = Math.max(camOffsetY, Math.PI/-2.0);
-	
-	console.log("" + camOffsetX + ", " + camOffsetY);
 	
 	// Construct the modelview matrix
 	mvMatrix = Mat4MakeIdentity();
 	
 	//Mat4Rotate(mvMatrix, Math.PI / 4.0, 1, 0, 0);
-	Mat4Translate(mvMatrix, WIDTH/2, HEIGHT/2, 0);
+	//Mat4Translate(mvMatrix, WIDTH/2, HEIGHT/2, 0);
+	Mat4Rotate(mvMatrix, camOffsetY, 1, 0, 0);
+	Mat4Rotate(mvMatrix, camOffsetX, 0, 1, 0);
+	Mat4Translate(mvMatrix, 0, -5, 0);
 	
 	if(heightmap) {
-		Mat4Scale(mvMatrix, 20, 20, 20);
-		Mat4Rotate(mvMatrix, camOffsetY, 1, 0, 0);
-		Mat4Rotate(mvMatrix, camOffsetX, 0, 1, 0);
+		//Mat4Scale(mvMatrix, 20, 20, 20);
 		Mat4Translate(mvMatrix, -(heightmap.x-1.0)/2.0, 0, -(heightmap.y-1.0)/2.0);
 
 
